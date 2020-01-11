@@ -43,7 +43,7 @@ def start_rpc_client_instance(rpc_server, mint_addr):
     global SERVER_ADDRESS
     global MINT_ACCOUNT
 
-    SERVER_ADDRESS = '0.0.0.0:50710'
+    SERVER_ADDRESS = rpc_server
     MINT_ACCOUNT = mint_addr
 
     channel = grpc.insecure_channel(SERVER_ADDRESS)
