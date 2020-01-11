@@ -15,7 +15,8 @@ import grpc
 from lib.admission_control_pb2_grpc import AdmissionControlStub
 from lib.get_with_proof_pb2 import UpdateToLatestLedgerRequest, GetAccountStateRequest, \
     RequestItem, GetTransactionsRequest
-from lib.transaction_pb2 import RawTransaction
+from libra.transaction import Transaction
+import libra
 
 import struct
 from hexdump import hexdump
@@ -42,7 +43,7 @@ def start_rpc_client_instance(rpc_server, mint_addr):
     global SERVER_ADDRESS
     global MINT_ACCOUNT
 
-    SERVER_ADDRESS = rpc_server
+    SERVER_ADDRESS = '0.0.0.0:50710'
     MINT_ACCOUNT = mint_addr
 
     channel = grpc.insecure_channel(SERVER_ADDRESS)
@@ -105,14 +106,13 @@ def get_raw_tx_lst(version, limit):
     request = UpdateToLatestLedgerRequest(client_known_version=last_version_seen, requested_items=[item])
     response = stub.UpdateToLatestLedger(request)
 
-    infos = response.response_items[0].get_transactions_response.txn_list_with_proof.infos
+    infos = response.response_items[0].get_transactions_response.txn_list_with_proof.proof.transaction_infos
     raw = response.response_items[0].get_transactions_response.txn_list_with_proof
     events = response.response_items[0].get_transactions_response.txn_list_with_proof.events_for_versions
 
     tx_struct = []
     for x in raw.transactions:
-        y = RawTransaction()
-        y.ParseFromString(x.raw_txn_bytes)
+        y = Transaction.deserialize(x.transaction).value
         tx_struct.append(y)
 
     return tx_struct, infos, raw, events
@@ -128,26 +128,33 @@ def parse_raw_tx_lst(struct_lst, infos, raw, events):
         tmp['version'] = cur_ver
         cur_ver += 1
 
-        tmp['expiration_date'] = str(datetime.fromtimestamp(min(tx.expiration_time, 2147485547)))
-        tmp['src'] = bytes.hex(tx.sender_account)
-        tmp['dest'] = bytes.hex(tx.program.arguments[0].data)
-        tmp['type'] = 'peer_to_peer_transaction' if tmp['src'] != MINT_ACCOUNT else 'mint_transaction'
-        tmp['amount'] = tx.program.arguments[1].data
-        tmp['gas_price'] = struct.pack("<Q", tx.gas_unit_price)
-        tmp['max_gas'] = struct.pack("<Q", tx.max_gas_amount)
-        tmp['sq_num'] = tx.sequence_number
-        tmp['pub_key'] = bytes.hex(r.sender_public_key)
-        tmp['expiration_unixtime'] = min(tx.expiration_time, 2**63 - 1)
+        if isinstance(tx, libra.transaction.signed_transaction.SignedTransaction):
+            tmp['expiration_date'] = str(datetime.fromtimestamp(min(tx.expiration_time, 2147485547)))
+            import pdb
+            pdb.set_trace()
+            tmp['src'] = bytes(tx.sender).hex()
+            tmp['dest'] = bytes(tx.payload.value.args[0].value).hex()
+            tmp['type'] = 'peer_to_peer_transaction' if tmp['src'] != MINT_ACCOUNT else 'mint_transaction'
+            tmp['amount'] = struct.pack("<Q", tx.payload.value.args[1].value)
+            tmp['gas_price'] = struct.pack("<Q", tx.gas_unit_price)
+            tmp['max_gas'] = struct.pack("<Q", tx.max_gas_amount)
+            tmp['sq_num'] = tx.sequence_number
+            tmp['pub_key'] = bytes(tx.public_key).hex()
+            tmp['expiration_unixtime'] = min(tx.expiration_time, 2**63 - 1)
 
-        tmp['gas_used'] = struct.pack("<Q", info.gas_used)
-
-        tmp['sender_sig'] = bytes.hex(r.sender_signature)
-        tmp['signed_tx_hash'] = bytes.hex(info.signed_transaction_hash)
-        tmp['state_root_hash'] = bytes.hex(info.state_root_hash)
-        tmp['event_root_hash'] = bytes.hex(info.event_root_hash)
-        tmp['code_hex'] = hexdump(tx.program.code, result='return')
-        tmp['program'] = str(tx.program)
-        #tmp['events'] = events
+            tmp['gas_used'] = struct.pack("<Q", info.gas_used)
+            # tmp['sender_sig'] = bytes.hex(r.sender_signature)
+            tmp['sender_sig'] = b""
+            tmp['signed_tx_hash'] = bytes.hex(info.transaction_hash)
+            tmp['state_root_hash'] = bytes.hex(info.state_root_hash)
+            tmp['event_root_hash'] = bytes.hex(info.event_root_hash)
+            # tmp['code_hex'] = hexdump(tx.program.code, result='return')
+            tmp['code_hex'] = ""
+            # tmp['program'] = str(tx.program)
+            tmp['program'] = ""
+            #tmp['events'] = events
+        elif isinstance(tx, libra.block_metadata.BlockMetadata):
+            tmp['type'] = 'BlockMetadata'
 
         res.append(tmp)
 
