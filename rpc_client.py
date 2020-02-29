@@ -130,8 +130,6 @@ def parse_raw_tx_lst(struct_lst, infos, raw, events):
 
         if isinstance(tx, libra.transaction.signed_transaction.SignedTransaction):
             tmp['expiration_date'] = str(datetime.fromtimestamp(min(tx.expiration_time, 2147485547)))
-            import pdb
-            pdb.set_trace()
             tmp['src'] = bytes(tx.sender).hex()
             tmp['dest'] = bytes(tx.payload.value.args[0].value).hex()
             tmp['type'] = 'peer_to_peer_transaction' if tmp['src'] != MINT_ACCOUNT else 'mint_transaction'
