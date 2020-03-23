@@ -5,10 +5,10 @@ syntax = "proto3";
 
 package admission_control;
 
-import "proto/get_with_proof.proto";
-import "proto/mempool_status.proto";
-import "proto/transaction.proto";
-import "proto/vm_errors.proto";
+import "get_with_proof.proto";
+import "mempool_status.proto";
+import "transaction.proto";
+import "vm_errors.proto";
 
 // The request for submitting a transaction to an upstream validator or full
 // node.

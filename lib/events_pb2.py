@@ -11,8 +11,8 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from . import access_path_pb2 as access__path__pb2
-from . import proof_pb2 as proof__pb2
+import access_path_pb2 as access__path__pb2
+import proof_pb2 as proof__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

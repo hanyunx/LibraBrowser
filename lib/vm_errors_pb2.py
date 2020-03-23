@@ -11,7 +11,6 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from . import language_storage_pb2 as language__storage__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -19,9 +18,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='types',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x0fvm_errors.proto\x12\x05types\x1a\x16language_storage.proto\"r\n\x08VMStatus\x12\x14\n\x0cmajor_status\x18\x01 \x01(\x04\x12\x16\n\x0ehas_sub_status\x18\x02 \x01(\x08\x12\x12\n\nsub_status\x18\x03 \x01(\x04\x12\x13\n\x0bhas_message\x18\x04 \x01(\x08\x12\x0f\n\x07message\x18\x05 \x01(\tb\x06proto3'
-  ,
-  dependencies=[language__storage__pb2.DESCRIPTOR,])
+  serialized_pb=b'\n\x0fvm_errors.proto\x12\x05types\"r\n\x08VMStatus\x12\x14\n\x0cmajor_status\x18\x01 \x01(\x04\x12\x16\n\x0ehas_sub_status\x18\x02 \x01(\x08\x12\x12\n\nsub_status\x18\x03 \x01(\x04\x12\x13\n\x0bhas_message\x18\x04 \x01(\x08\x12\x0f\n\x07message\x18\x05 \x01(\tb\x06proto3'
+)
 
 
 
@@ -80,8 +78,8 @@ _VMSTATUS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=50,
-  serialized_end=164,
+  serialized_start=26,
+  serialized_end=140,
 )
 
 DESCRIPTOR.message_types_by_name['VMStatus'] = _VMSTATUS

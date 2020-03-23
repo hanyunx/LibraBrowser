@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package types;
 
-import "proto/ledger_info.proto";
+import "ledger_info.proto";
 
 // This is used to prove validator changes.
 message ValidatorChangeProof {
